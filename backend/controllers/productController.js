@@ -18,13 +18,32 @@ let products = [
 ];
 
 // GET all products
+// GET all products with search and category filter
 exports.getProducts = (req, res) => {
+    const { search, category } = req.query;
+
+    let filteredProducts = products;
+
+    // Search by product name
+    if (search) {
+        filteredProducts = filteredProducts.filter(product =>
+            product.name.toLowerCase().includes(search.toLowerCase())
+        );
+    }
+
+    // Filter by category
+    if (category) {
+        filteredProducts = filteredProducts.filter(product =>
+            product.category.toLowerCase() === category.toLowerCase()
+        );
+    }
+
     res.status(200).json({
         success: true,
-        products: products
+        count: filteredProducts.length,
+        products: filteredProducts
     });
 };
-
 // CREATE product
 exports.createProduct = (req, res) => {
     const { name, description, price, category, stock } = req.body;
