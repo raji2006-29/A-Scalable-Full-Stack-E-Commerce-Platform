@@ -1,5 +1,7 @@
 const express = require("express");
+
 const productRoutes = require("./routes/productRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 
@@ -8,6 +10,9 @@ app.use(express.json());
 
 // Product routes
 app.use("/api/products", productRoutes);
+
+// Order routes
+app.use("/api/orders", orderRoutes);
 
 // Home route
 app.get("/", (req, res) => {

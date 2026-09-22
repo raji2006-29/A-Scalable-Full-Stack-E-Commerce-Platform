@@ -58,3 +58,39 @@ http://localhost:5000/api/products
     "category": "Electronics",
     "stock": 15
 }
+---
+
+# Order API
+
+Base URL:
+
+http://localhost:5000/api/orders
+
+---
+
+## 1. CREATE ORDER
+
+### Request
+
+POST /api/orders
+
+### Example
+
+POST http://localhost:5000/api/orders
+
+### Request Body
+
+```json
+{
+    "customerName": "Meghana",
+    "customerEmail": "meghana@example.com",
+    "items": [
+        {
+            "productId": 1,
+            "productName": "Laptop",
+            "quantity": 1,
+            "price": 55000
+        }
+    ],
+    "totalAmount": 55000
+}
