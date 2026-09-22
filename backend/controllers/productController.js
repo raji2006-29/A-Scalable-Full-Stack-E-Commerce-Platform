@@ -18,11 +18,42 @@ let products = [
 ];
 
 // GET all products
-// GET all products with search and category filter
+// Supports search, category, price filter, sorting and pagination
 exports.getProducts = (req, res) => {
-    const { search, category } = req.query;
+    const {
+        search,
+        category,
+        minPrice,
+        maxPrice,
+        sort
+    } = req.query;
 
-    let filteredProducts = products;
+    // Pagination values
+    const page = req.query.page === undefined
+        ? 1
+        : Number(req.query.page);
+
+    const limit = req.query.limit === undefined
+        ? 10
+        : Number(req.query.limit);
+
+    // Validate page
+    if (!Number.isInteger(page) || page < 1) {
+        return res.status(400).json({
+            success: false,
+            message: "Page must be a positive integer"
+        });
+    }
+
+    // Validate limit
+    if (!Number.isInteger(limit) || limit < 1) {
+        return res.status(400).json({
+            success: false,
+            message: "Limit must be a positive integer"
+        });
+    }
+
+    let filteredProducts = [...products];
 
     // Search by product name
     if (search) {
@@ -38,15 +69,100 @@ exports.getProducts = (req, res) => {
         );
     }
 
+    // Minimum price filter
+    if (minPrice !== undefined) {
+        filteredProducts = filteredProducts.filter(product =>
+            product.price >= Number(minPrice)
+        );
+    }
+
+    // Maximum price filter
+    if (maxPrice !== undefined) {
+        filteredProducts = filteredProducts.filter(product =>
+            product.price <= Number(maxPrice)
+        );
+    }
+
+    // Sorting
+    if (sort === "price_asc") {
+        filteredProducts.sort((a, b) => a.price - b.price);
+    }
+
+    if (sort === "price_desc") {
+        filteredProducts.sort((a, b) => b.price - a.price);
+    }
+
+    if (sort === "name_asc") {
+        filteredProducts.sort((a, b) =>
+            a.name.localeCompare(b.name)
+        );
+    }
+
+    if (sort === "name_desc") {
+        filteredProducts.sort((a, b) =>
+            b.name.localeCompare(a.name)
+        );
+    }
+
+    // Total number of products after filtering
+    const totalProducts = filteredProducts.length;
+
+    // Calculate starting index
+    const startIndex = (page - 1) * limit;
+
+    // Calculate ending index
+    const endIndex = startIndex + limit;
+
+    // Get products for current page
+    const paginatedProducts = filteredProducts.slice(
+        startIndex,
+        endIndex
+    );
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalProducts / limit);
+
     res.status(200).json({
         success: true,
-        count: filteredProducts.length,
-        products: filteredProducts
+        count: paginatedProducts.length,
+        totalProducts: totalProducts,
+        page: page,
+        limit: limit,
+        totalPages: totalPages,
+        products: paginatedProducts
     });
 };
+
+
+// GET product by ID
+exports.getProductById = (req, res) => {
+    const id = Number(req.params.id);
+
+    const product = products.find(product => product.id === id);
+
+    if (!product) {
+        return res.status(404).json({
+            success: false,
+            message: "Product not found"
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        product: product
+    });
+};
+
+
 // CREATE product
 exports.createProduct = (req, res) => {
-    const { name, description, price, category, stock } = req.body;
+    const {
+        name,
+        description,
+        price,
+        category,
+        stock
+    } = req.body;
 
     // Required field validation
     if (
@@ -98,6 +214,7 @@ exports.createProduct = (req, res) => {
     });
 };
 
+
 // UPDATE product
 exports.updateProduct = (req, res) => {
     const id = Number(req.params.id);
@@ -111,10 +228,19 @@ exports.updateProduct = (req, res) => {
         });
     }
 
-    const { name, description, price, category, stock } = req.body;
+    const {
+        name,
+        description,
+        price,
+        category,
+        stock
+    } = req.body;
 
     // Price validation
-    if (price !== undefined && (typeof price !== "number" || price <= 0)) {
+    if (
+        price !== undefined &&
+        (typeof price !== "number" || price <= 0)
+    ) {
         return res.status(400).json({
             success: false,
             message: "Price must be a number greater than 0"
@@ -122,7 +248,10 @@ exports.updateProduct = (req, res) => {
     }
 
     // Stock validation
-    if (stock !== undefined && (typeof stock !== "number" || stock < 0)) {
+    if (
+        stock !== undefined &&
+        (typeof stock !== "number" || stock < 0)
+    ) {
         return res.status(400).json({
             success: false,
             message: "Stock must be a number greater than or equal to 0"
@@ -156,11 +285,14 @@ exports.updateProduct = (req, res) => {
     });
 };
 
+
 // DELETE product
 exports.deleteProduct = (req, res) => {
     const id = Number(req.params.id);
 
-    const productIndex = products.findIndex(product => product.id === id);
+    const productIndex = products.findIndex(
+        product => product.id === id
+    );
 
     if (productIndex === -1) {
         return res.status(404).json({
