@@ -164,3 +164,47 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 500px) {
+    .card {
+        width: 100%;
+    }
+
+    .card img {
+        height: 160px;
+    }
+    @media (max-width: 500px) {
+  .navbar {
+    padding: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .navbar a {
+    margin-left: 10px;
+    font-size: 14px;
+  }
+
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  .card img {
+    height: 160px;
+  }
+
+  .home h1 {
+    font-size: 32px;
+    line-height: 1.1;
+  }
+
+  .home p {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+}
+}
